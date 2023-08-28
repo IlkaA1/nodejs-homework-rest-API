@@ -1,7 +1,7 @@
 const Contact = require("./contact");
 
 const listContacts = async () => {
-  const data = await Contact.find({});
+  const data = await Contact.find();
   console.log(data);
   return data;
 };
@@ -22,10 +22,15 @@ const removeContact = (id) => {
   return Contact.findByIdAndRemove({ _id: id });
 };
 
+const updateStatusContact = (id, body) => {
+  return Contact.findByIdAndUpdate({ _id: id }, body, { new: true });
+};
+
 module.exports = {
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 };
