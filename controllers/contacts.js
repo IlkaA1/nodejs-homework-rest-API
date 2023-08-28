@@ -4,8 +4,8 @@ const schema = require("../schemas/schemas");
 
 const getAll = async (req, res) => {
   const data = await contacts.listContacts();
-
-  res.status(200).json(data);
+  console.log(data);
+  res.status(200).json({ getAll: data });
 };
 
 const getContactById = async (req, res) => {
@@ -15,6 +15,7 @@ const getContactById = async (req, res) => {
   if (!data) {
     throw HttpError(404, "Not found");
   }
+
   res.status(200).json(data);
 };
 
