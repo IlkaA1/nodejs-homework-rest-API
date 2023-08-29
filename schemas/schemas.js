@@ -6,6 +6,11 @@ const schema = Joi.object({
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
   phone: Joi.string().required(),
+  favorite: Joi.boolean().required(),
 });
 
-module.exports = { schema };
+const updateFavoriteSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
+module.exports = { schema, updateFavoriteSchema };
