@@ -1,4 +1,4 @@
-const { contactsFunktion } = require("../../models");
+const { contactsFunktion } = require("../../models/contacts/index");
 const { schema } = require("../../schemas");
 
 const addContact = async (req, res) => {
@@ -10,6 +10,8 @@ const addContact = async (req, res) => {
   if (typeof error !== "undefined") {
     res.status(400).json({ message: error.details[0].message });
   }
+
+  value.owner = req.user.id;
 
   const newContact = await contactsFunktion.addContact(value);
 

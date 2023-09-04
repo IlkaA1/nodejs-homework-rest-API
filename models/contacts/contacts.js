@@ -1,17 +1,31 @@
 const Contact = require("./contact");
 
-const listContacts = async () => {
-  const data = await Contact.find();
-  console.log(data);
-  return data;
+const listContacts = async (owner, page = 1, limit, favorite) => {
+  const data = await Contact.find(owner).exec();
+
+  if (data.length < limit) {
+    return data;
+  }
+
+  if (favorite) {
+    const data = await Contact.find(owner).find({ favorite }).exec();
+    return data;
+  }
+
+  const pagination = await Contact.find(owner)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .exec();
+
+  return pagination;
 };
 
 const getContactById = (id) => {
   return Contact.findOne({ _id: id });
 };
 
-const addContact = ({ name, email, phone }) => {
-  return Contact.create({ name, email, phone });
+const addContact = ({ name, email, phone, owner }) => {
+  return Contact.create({ name, email, phone, owner });
 };
 
 const updateContact = (id, fields) => {
