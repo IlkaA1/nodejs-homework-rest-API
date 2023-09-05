@@ -1,4 +1,4 @@
-const { contactsFunktion } = require("../../models");
+const { contactsFunktion } = require("../../models/contacts");
 const { schema, updateFavoriteSchema } = require("../../schemas");
 
 const updateContact = async (req, res) => {
@@ -16,8 +16,13 @@ const updateContact = async (req, res) => {
   if (Object.keys(body).length === 0) {
     res.status(400).json({ message: "missing field" });
   }
+
   if (body) {
     const data = await contactsFunktion.updateContact(contactId, value);
+
+    if (data.owner.toString() !== req.user.id) {
+      return res.status(404).send({ message: "Book not found" });
+    }
     if (!data) {
       res.status(404).json({ message: "Not found" });
     }
@@ -41,6 +46,9 @@ const favoriteContact = async (req, res) => {
   }
   if (body) {
     const data = await contactsFunktion.updateStatusContact(contactId, value);
+    if (data.owner.toString() !== req.user.id) {
+      return res.status(404).send({ message: "Book not found" });
+    }
     if (!data) {
       res.status(404).json({ message: "Not found" });
     }
