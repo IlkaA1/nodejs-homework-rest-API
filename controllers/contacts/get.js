@@ -2,7 +2,7 @@ const { contactsFunktion } = require("../../models/contacts");
 
 const getAll = async (req, res) => {
   const { page, limit, favorite } = req.query;
-  console.log(favorite);
+
   const data = await contactsFunktion.listContacts(
     { owner: req.user.id },
     page,

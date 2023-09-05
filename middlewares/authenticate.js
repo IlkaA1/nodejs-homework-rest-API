@@ -6,7 +6,7 @@ const authenticate = async (req, res, next) => {
 
   const [bearer, token] = authHeader.split(" ", 2);
 
-  if (bearer !== "Bearer") {
+  if (bearer !== "Bearer" && token) {
     return res.status(401).send({ message: "No token provided" });
   }
 
