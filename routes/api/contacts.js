@@ -1,6 +1,6 @@
 const express = require("express");
 const ctrl = require("../../controllers/contacts/index");
-const authenticate = require("../../middlewares/index");
+const { authenticate } = require("../../middlewares/index");
 const router = express.Router();
 
 router.get("/", authenticate, ctrl.getAll);

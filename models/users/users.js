@@ -6,8 +6,8 @@ const userFind = (email) => {
 };
 
 const addUser = (body) => {
-  const { email, password } = body;
-  return User.create({ email, password });
+  const { email, password, avatarURL } = body;
+  return User.create({ email, password, avatarURL });
 };
 
 const findById = (id) => {
@@ -28,10 +28,18 @@ const findAndUpdateSubscription = async (id, subscription) => {
   return data;
 };
 
+const findAndUpdateAvatar = async (id, avatarURL) => {
+  const data = await User.findByIdAndUpdate(id, avatarURL, {
+    new: true,
+  }).exec();
+  return data;
+};
+
 module.exports = {
   addUser,
   userFind,
   findById,
   findAndUpdate,
   findAndUpdateSubscription,
+  findAndUpdateAvatar,
 };
