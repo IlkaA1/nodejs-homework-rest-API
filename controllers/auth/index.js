@@ -6,6 +6,7 @@ const {
   logout,
   current,
   subscription,
+  avatars,
 } = require("./auth");
 
 module.exports = {
@@ -14,4 +15,5 @@ module.exports = {
   logout: ctrlWrapper(logout),
   current: ctrlWrapper(current),
   subscription: ctrlWrapper(subscription),
+  avatars: ctrlWrapper(avatars),
 };

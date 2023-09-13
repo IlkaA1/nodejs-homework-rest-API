@@ -2,8 +2,14 @@ const { schemaForAuth } = require("../../schemas");
 const { authFunktion } = require("../../models/users/index");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs/promises");
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
+
+const avatarsDir = path.join(__dirname, "../", "../", "public", "avatars");
+console.log(avatarsDir);
 
 const registerUser = async (req, res) => {
   const { error, value } = schemaForAuth.validate(req.body, {
@@ -27,9 +33,12 @@ const registerUser = async (req, res) => {
     }
 
     const hashPassword = await bcrypt.hash(password, 10);
+    const avatarURL = gravatar.url(email);
+
     const newUser = await authFunktion.addUser({
       email,
       password: hashPassword,
+      avatarURL,
     });
 
     res.status(201).json({ user: newUser });
@@ -106,10 +115,23 @@ const subscription = async (req, res) => {
   res.status(200).json({ user: data });
 };
 
+const avatars = async (req, res) => {
+  const { id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const filename = `${id}_${originalname}`;
+  const fileName = path.join(avatarsDir, filename);
+  await fs.rename(tempUpload, fileName);
+  const avatarURL = path.join("avatars", filename);
+  await authFunktion.findAndUpdateAvatar(id, avatarURL);
+
+  res.status(200).json({ avatarURL });
+};
+
 module.exports = {
   registerUser,
   loginUser,
   logout,
   current,
   subscription,
+  avatars,
 };
