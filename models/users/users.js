@@ -6,8 +6,8 @@ const userFind = (email) => {
 };
 
 const addUser = (body) => {
-  const { email, password } = body;
-  return User.create({ email, password });
+  const { email, password, verificationToken } = body;
+  return User.create({ email, password, verificationToken });
 };
 
 const findById = (id) => {
@@ -28,10 +28,29 @@ const findAndUpdateSubscription = async (id, subscription) => {
   return data;
 };
 
+const filterVerification = async (verificationToken) => {
+  const data = await User.findOne({ verificationToken }).exec();
+  return data;
+};
+
+const findAndUpdateverificationToken = async (_id) => {
+  const data = await User.findByIdAndUpdate(
+    _id,
+    {
+      verificationToken: null,
+      verify: true,
+    },
+    { new: true }
+  ).exec();
+  return data;
+};
+
 module.exports = {
   addUser,
   userFind,
   findById,
   findAndUpdate,
   findAndUpdateSubscription,
+  filterVerification,
+  findAndUpdateverificationToken,
 };

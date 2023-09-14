@@ -8,4 +8,8 @@ const schemaForAuth = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
-module.exports = schemaForAuth;
+const schemaEmail = Joi.object({
+  email: Joi.string().pattern(emailValidation).required(),
+});
+
+module.exports = { schemaForAuth, schemaEmail };

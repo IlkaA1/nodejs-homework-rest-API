@@ -1,7 +1,10 @@
-const { schemaForAuth } = require("../../schemas");
+const { schemaForAuth, schemaEmail } = require("../../schemas");
 const { authFunktion } = require("../../models/users/index");
+const { sendMail } = require("../../helpers/index");
+const crypto = require("node:crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -27,13 +30,48 @@ const registerUser = async (req, res) => {
     }
 
     const hashPassword = await bcrypt.hash(password, 10);
+    const verificationToken = crypto.randomUUID();
+    const emailOptions = {
+      to: email,
+      subject: `Welcome!`,
+      html: `
+        <p>To confirm your registration, please click on link below</p>
+        <p>
+          <a href="http://localhost:3005/users/verify/${verificationToken}">Click me</a>
+        </p>
+      `,
+      text: `
+        To confirm your registration, please click on link below\n
+        http://localhost:3005/users/verify/${verificationToken}
+      `,
+    };
+    await sendMail(emailOptions);
+
     const newUser = await authFunktion.addUser({
       email,
       password: hashPassword,
+      verificationToken,
     });
 
     res.status(201).json({ user: newUser });
   }
+};
+
+const verify = async (req, res) => {
+  const { verificationToken } = req.params;
+
+  const data = await authFunktion.filterVerification(verificationToken);
+  if (!data) {
+    res.status(404).json({ message: "User not found" });
+  }
+
+  const { _id } = data;
+
+  await authFunktion.findAndUpdateverificationToken(_id);
+
+  res.status(200).json({
+    message: "Verification successful",
+  });
 };
 
 const loginUser = async (req, res) => {
@@ -50,6 +88,10 @@ const loginUser = async (req, res) => {
   if (value) {
     const { email, password } = req.body;
     const user = await authFunktion.userFind(email);
+
+    if (user.verify !== true) {
+      return res.status(401).send({ message: "Please verify your email" });
+    }
 
     if (user === null) {
       console.log("emai");
@@ -106,10 +148,48 @@ const subscription = async (req, res) => {
   res.status(200).json({ user: data });
 };
 
+const additionalVerify = async (req, res) => {
+  const { error, value } = schemaEmail.validate(req.body, {
+    abortEarly: false,
+    allowUnknown: true,
+  });
+
+  if (typeof error !== "undefined") {
+    res.status(400).json({ message: "missing required field email" });
+    return;
+  }
+  const { email } = value;
+  const user = await authFunktion.userFind(email);
+
+  if (user.verify === true) {
+    res.status(400).json({ message: "Verification has already been passed" });
+  }
+
+  const emailOptions = {
+    to: email,
+    subject: `Welcome!`,
+    html: `
+        <p>To confirm your registration, please click on link below</p>
+        <p>
+          <a href="http://localhost:3005/users/verify/${user.verificationToken}">Click me</a>
+        </p>
+      `,
+    text: `
+        To confirm your registration, please click on link below\n
+        http://localhost:3005/users/verify/${user.verificationToken}
+      `,
+  };
+  await sendMail(emailOptions);
+
+  res.status(200).json({ message: "Verification email sent" });
+};
+
 module.exports = {
   registerUser,
   loginUser,
   logout,
   current,
   subscription,
+  verify,
+  additionalVerify,
 };
